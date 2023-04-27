@@ -1,0 +1,68 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.35.1.
+--
+-- see: https://github.com/sol/hpack
+
+name:           lineageos-history
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/mejgun/lineageos-history#readme>
+homepage:       https://github.com/mejgun/lineageos-history#readme
+bug-reports:    https://github.com/mejgun/lineageos-history/issues
+author:         mejgun
+maintainer:     example@example.com
+copyright:      mejgun
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/mejgun/lineageos-history
+
+library
+  exposed-modules:
+      Devices
+      Lib
+  other-modules:
+      Paths_lineageos_history
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , text
+  default-language: Haskell2010
+
+executable lineageos-history-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_lineageos_history
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , lineageos-history
+    , text
+  default-language: GHC2021
+
+test-suite lineageos-history-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_lineageos_history
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , lineageos-history
+    , text
+  default-language: Haskell2010
