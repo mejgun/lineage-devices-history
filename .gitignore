@@ -24,3 +24,6 @@ cabal.project.local~
 .HTF/
 .ghc.environment.*
 lineageos-history-exe
+hudson/
+commits.list
+*.png
