@@ -26,8 +26,10 @@ source-repository head
 library
   exposed-modules:
       BuildTargets
-      Devices
+      Git
       Lib
+      Los.BuildFile
+      Los.Devices
   other-modules:
       Paths_lineageos_history
   hs-source-dirs:

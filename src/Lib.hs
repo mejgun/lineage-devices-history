@@ -1,47 +1,24 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Lib
-  ( someFunc,
-  )
-where
+module Lib (Lib.start) where
 
 import BuildTargets qualified
 import Control.Monad (foldM)
-import Data.ByteString qualified as BS
-import Data.ByteString.Char8 qualified as B8
 import Data.HashMap.Strict qualified as HM
-import Data.Maybe (catMaybes)
 import Data.Time (UTCTime)
-import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
-import Devices (DeviceMap)
-import Devices qualified
-import System.Directory qualified as D
+import Git qualified
+import Los.BuildFile qualified
+import Los.Devices qualified
 import System.Process qualified as P
 
-type Commit = (String, UTCTime)
+type CommitMap = HM.HashMap Git.Commit [BuildTargets.Target]
 
-type CommitMap = HM.HashMap Commit [BuildTargets.Target]
+start :: IO ()
+start = do
+  Git.openRepo "hudson"
+  l <- Git.listCommits
 
-someFunc :: IO ()
-someFunc = do
-  D.setCurrentDirectory "hudson"
-  _ <- P.readProcess "git" ["stash"] ""
-  _ <- P.readProcessWithExitCode "git" ["stash", "drop"] ""
-  _ <- P.readProcess "git" ["checkout", "master"] ""
-  -- devices <- Devices.read "updater/devices.json"
-  s <- P.readProcess "git" ["log", "--pretty=format:%H %ct"] ""
-  let l = reverse $ parseLogEntry <$> lines s
-  {-
-  mapM_
-    ( \e ->
-        print e
-          >> P.readProcess "git" ["checkout", "--quiet", fst e] ""
-          >> D.listDirectory "."
-          >>= print
-    )
-    l
-  -}
   (res1, res2) <- foldM handleCommit (HM.empty, HM.empty) l
   putStrLn ""
   _ <- P.readProcess "git" ["checkout", "master"] ""
@@ -49,31 +26,12 @@ someFunc = do
   mapM_ print $ HM.toList res1
   mapM_ print $ HM.toList res2
 
--- print $ head devices
-
-parseLogEntry :: String -> Commit
-parseLogEntry s = case words s of
-  [x1, x2] -> (x1, t)
-    where
-      t = posixSecondsToUTCTime $ fromIntegral (read x2 :: Int)
-  _ -> error $ "bad log format: " ++ s
-
 handleCommit ::
-  (Devices.DeviceMap, CommitMap) ->
+  (Los.Devices.DeviceMap, CommitMap) ->
   (String, UTCTime) ->
-  IO (DeviceMap, CommitMap)
+  IO (Los.Devices.DeviceMap, CommitMap)
 handleCommit (devs, commits) c@(cmt, _) = do
-  _ <- P.readProcess "git" ["checkout", "--quiet", cmt] ""
-  newdevs <- Devices.update devs
-  ts <- parseBuildFile
+  Git.checkout cmt
+  newdevs <- Los.Devices.update devs
+  ts <- Los.BuildFile.read
   pure (newdevs, HM.insert c ts commits)
-
-parseBuildFile :: IO [BuildTargets.Target]
-parseBuildFile = do
-  a <- D.listDirectory "."
-  files <- mapM BS.readFile $ fltr a
-  let res = BuildTargets.targetParse <$> concat (B8.lines <$> files)
-  pure $ catMaybes res
-  where
-    isBF = BS.isSuffixOf "-build-targets"
-    fltr = filter (isBF . B8.pack)

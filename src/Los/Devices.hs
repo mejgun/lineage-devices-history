@@ -2,7 +2,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Devices (Devices.update, DeviceMap, Item (..)) where
+module Los.Devices
+  ( Los.Devices.update,
+    DeviceMap,
+    Item (..),
+  )
+where
 
 import Control.Applicative ((<|>))
 import Control.Monad (filterM)
@@ -57,10 +62,3 @@ readFiles = s r
     s x = do
       y <- sequence <$> x
       concat . rights <$> y
-
--- read :: FilePath -> IO [Item]
--- read filename = do
---   result <- eitherDecodeFileStrict filename :: IO (Either String [Item])
---   case result of
---     Left err -> error err
---     Right items -> pure items
