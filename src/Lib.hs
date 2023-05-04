@@ -9,6 +9,7 @@ where
 import BuildTargets qualified
 import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as B8
+import Data.Text qualified as T
 import Data.Time (UTCTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import Devices qualified
@@ -34,7 +35,7 @@ someFunc = do
     )
     l
   -}
-  mapM_ parseBuildFile l
+  mapM_ (parseBuildFile devices) l
   putStrLn ""
   _ <- P.readProcess "git" ["checkout", "master"] ""
   print $ head devices
@@ -46,13 +47,16 @@ parseLogEntry s = case words s of
       t = posixSecondsToUTCTime $ fromIntegral (read x2 :: Int)
   _ -> error $ "bad log format: " ++ s
 
-parseBuildFile :: (String, b) -> IO ()
-parseBuildFile (cmt, _) = do
+parseBuildFile :: [Devices.Item] -> (String, b) -> IO ()
+parseBuildFile devs (cmt, _) = do
   _ <- P.readProcess "git" ["checkout", "--quiet", cmt] ""
   a <- D.listDirectory "."
   files <- mapM BS.readFile $ fltr a
   let res = BuildTargets.targetParse <$> concat (B8.lines <$> files)
-  mapM_ print res
+  mapM_ pr res
   where
     isBF = BS.isSuffixOf "-build-targets"
     fltr = filter (isBF . B8.pack)
+    pr Nothing = print ("-" :: String)
+    pr (Just (BuildTargets.Target m _)) =
+      let l = filter (\e -> Devices.model e == T.pack m) devs in print $ m ++ " == " ++ show (length l)

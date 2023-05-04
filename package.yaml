@@ -25,9 +25,10 @@ dependencies:
 - attoparsec
 - text
 - bytestring
-- time
 - process
 - directory
+- time
+- unordered-containers
 
 ghc-options:
 - -Wall
