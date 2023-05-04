@@ -7,10 +7,11 @@ module Lib
 where
 
 import BuildTargets qualified
-import Control.Monad (foldM_)
+import Control.Monad (foldM)
 import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as B8
 import Data.HashMap.Strict qualified as HM
+import Data.Maybe (catMaybes)
 import Data.Time (UTCTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import Devices (DeviceMap)
@@ -19,6 +20,8 @@ import System.Directory qualified as D
 import System.Process qualified as P
 
 type Commit = (String, UTCTime)
+
+type CommitMap = HM.HashMap Commit [BuildTargets.Target]
 
 someFunc :: IO ()
 someFunc = do
@@ -39,10 +42,12 @@ someFunc = do
     )
     l
   -}
-  foldM_ handleCommit HM.empty l
+  (res1, res2) <- foldM handleCommit (HM.empty, HM.empty) l
   putStrLn ""
   _ <- P.readProcess "git" ["checkout", "master"] ""
   putStrLn "done"
+  mapM_ print $ HM.toList res1
+  mapM_ print $ HM.toList res2
 
 -- print $ head devices
 
@@ -53,25 +58,22 @@ parseLogEntry s = case words s of
       t = posixSecondsToUTCTime $ fromIntegral (read x2 :: Int)
   _ -> error $ "bad log format: " ++ s
 
-handleCommit :: Devices.DeviceMap -> (String, UTCTime) -> IO DeviceMap
-handleCommit devs (cmt, _) = do
+handleCommit ::
+  (Devices.DeviceMap, CommitMap) ->
+  (String, UTCTime) ->
+  IO (DeviceMap, CommitMap)
+handleCommit (devs, commits) c@(cmt, _) = do
   _ <- P.readProcess "git" ["checkout", "--quiet", cmt] ""
   newdevs <- Devices.update devs
-  parseBuildFile newdevs
-  pure newdevs
+  ts <- parseBuildFile
+  pure (newdevs, HM.insert c ts commits)
 
-parseBuildFile :: Devices.DeviceMap -> IO ()
-parseBuildFile devs = do
+parseBuildFile :: IO [BuildTargets.Target]
+parseBuildFile = do
   a <- D.listDirectory "."
   files <- mapM BS.readFile $ fltr a
   let res = BuildTargets.targetParse <$> concat (B8.lines <$> files)
-  mapM_ pr res
+  pure $ catMaybes res
   where
     isBF = BS.isSuffixOf "-build-targets"
     fltr = filter (isBF . B8.pack)
-    pr Nothing = print ("-" :: String)
-    pr (Just (BuildTargets.Target m _)) =
-      print $ m ++ " == " ++ show (HM.member m devs)
-
--- let l = filter (\e -> Devices.model e == T.pack m) devs
---  in print $ m ++ " == " ++ show (length l)
