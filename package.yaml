@@ -22,7 +22,9 @@ description:         Please see the README on GitHub at <https://github.com/mejg
 dependencies:
 - base >= 4.7 && < 5
 - aeson
+- attoparsec
 - text
+- bytestring
 - time
 - process
 - directory
