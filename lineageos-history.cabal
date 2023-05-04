@@ -25,10 +25,10 @@ source-repository head
 
 library
   exposed-modules:
-      BuildTargets
       Git
       Lib
       Los.BuildFile
+      Los.BuildFile.Parser
       Los.Devices
   other-modules:
       Paths_lineageos_history

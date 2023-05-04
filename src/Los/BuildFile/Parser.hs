@@ -1,7 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module BuildTargets (Target (..), targetParse) where
+module Los.BuildFile.Parser (Target (..), parseLine) where
 
 import Control.Applicative ((<|>))
 import Control.Monad (guard)
@@ -12,10 +12,10 @@ import Data.ByteString.Char8 qualified as B8
 import Data.Either (isRight)
 import Data.Functor (($>))
 
-targetParse :: BS.ByteString -> Maybe Target
-targetParse x | isRight (P.parseOnly commentParser x) = Nothing
-targetParse x | isRight (P.parseOnly emptyParser x) = Nothing
-targetParse x = case P.parseOnly targetParser x of
+parseLine :: BS.ByteString -> Maybe Target
+parseLine x | isRight (P.parseOnly commentParser x) = Nothing
+parseLine x | isRight (P.parseOnly emptyParser x) = Nothing
+parseLine x = case P.parseOnly targetParser x of
   Right r -> Just r
   Left s -> error $ s ++ "cannot parse " ++ B8.unpack x
 
