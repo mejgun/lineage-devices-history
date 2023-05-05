@@ -23,14 +23,14 @@ start = do
   initDevices <- Los.Devices.init
   Git.openRepo "hudson"
   l <- Git.listCommits
-  (_res1, res2) <- foldM handleCommit (initDevices, HM.empty) l
+  (res1, res2) <- foldM handleCommit (initDevices, HM.empty) l
   Git.leaveRepo
   let commits = sortOn (snd . fst) $ filter (not . null . snd) $ HM.toList res2
   -- mapM_ print $ sortOn fst $ HM.toList res1
   -- mapM_ print commits
   -- Diff.get res1
   let (diffs, _) = foldl getDelta ([], (("", posixSecondsToUTCTime 1), [])) commits
-  saveDiffs $ filter (not . null . snd) diffs
+  saveDiffs res1 $ filter (not . null . snd) diffs
   putStrLn "done"
 
 handleCommit :: Acc -> Git.Commit -> IO Acc

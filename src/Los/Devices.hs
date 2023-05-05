@@ -20,7 +20,6 @@ import Data.Aeson
   )
 import Data.Either (rights)
 import Data.HashMap.Strict qualified as HM
-import Data.Text (Text)
 import Data.Text qualified as T
 import System.Directory (doesFileExist)
 
@@ -34,9 +33,9 @@ initPath :: FilePath
 initPath = "devices.json"
 
 data Item = Item
-  { model :: Text,
-    oem :: Text,
-    name :: Text
+  { model :: T.Text,
+    oem :: T.Text,
+    name :: T.Text
   }
   deriving (Show)
 
@@ -47,7 +46,7 @@ instance FromJSON Item where
     name <- o .: "name"
     return Item {..}
 
-type DeviceMap = HM.HashMap String Item
+type DeviceMap = HM.HashMap T.Text Item
 
 init :: IO DeviceMap
 init = readMaps [initPath]
@@ -58,7 +57,7 @@ update m = HM.union <$> readMaps paths <*> pure m
 readMaps :: [FilePath] -> IO DeviceMap
 readMaps files = HM.fromList . toEntryList <$> readFiles files
   where
-    toEntryList = fmap (\e -> (T.unpack (model e), e))
+    toEntryList = fmap (\e -> (model e, e))
 
 readFiles :: [FilePath] -> IO [Item]
 readFiles files = ps >>= r >>= s

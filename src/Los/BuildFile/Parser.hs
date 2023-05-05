@@ -11,6 +11,8 @@ import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as B8
 import Data.Either (isRight)
 import Data.Functor (($>))
+import Data.Text qualified as T
+import Data.Text.Encoding qualified as TE
 
 parseLine :: BS.ByteString -> Maybe Target
 parseLine x | isRight (P.parseOnly commentParser x) = Nothing
@@ -29,9 +31,9 @@ data Empty = Empty
 emptyParser :: P.Parser Empty
 emptyParser = (P.many' P8.space *> P.endOfInput) $> Empty
 
-type Model = String
+type Model = T.Text
 
-type Branch = BS.ByteString
+type Branch = T.Text
 
 data Target = Target Model Branch deriving (Show)
 
@@ -47,30 +49,34 @@ targetParser =
     cmParser :: P.Parser Target
     cmParser = do
       _ <- P.string "cm_"
-      m <- P.manyTill P8.anyChar "-userdebug "
-      guard $ not . null $ m
-      target <- P.takeWhile1 $ P.notInClass " \r\n"
+      m <- getModel P8.anyChar "-userdebug "
+      grd m
+      target <- TE.decodeUtf8 <$> P.takeWhile1 (P.notInClass " \r\n")
       return $ Target m target
 
     cmNoUsrDbgParser :: P.Parser Target
     cmNoUsrDbgParser = do
       _ <- P.string "cm_"
-      m <- P.manyTill P8.anyChar " "
-      guard $ not . null $ m
-      target <- P.takeWhile1 $ P.notInClass " \r\n"
+      m <- getModel P8.anyChar " "
+      grd m
+      target <- TE.decodeUtf8 <$> P.takeWhile1 (P.notInClass " \r\n")
       return $ Target m target
 
     cyanParser :: P.Parser Target
     cyanParser = do
       _ <- P.string "cyanogen_"
-      m <- P.manyTill P8.anyChar "-eng "
-      guard $ not . null $ m
-      target <- P.takeWhile1 $ P.notInClass " \r\n"
+      m <- getModel P8.anyChar "-eng "
+      grd m
+      target <- TE.decodeUtf8 <$> P.takeWhile1 (P.notInClass " \r\n")
       return $ Target m target
 
     losParser :: P.Parser Target
     losParser = do
-      m <- P.manyTill P8.anyChar " userdebug "
-      guard $ not . null $ m
-      target <- P.takeWhile1 $ P.notInClass " \r\n"
+      m <- getModel P8.anyChar " userdebug "
+      grd m
+      target <- TE.decodeUtf8 <$> P.takeWhile1 (P.notInClass " \r\n")
       return $ Target m target
+
+    getModel x y = T.pack <$> P.manyTill x y
+
+    grd = guard . not . T.null

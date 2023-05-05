@@ -1,6 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 
-module Diff (get, Diffs) where
+module Diff (get, Diffs, Action (..)) where
 
 import Data.Maybe (isNothing, mapMaybe)
 import Git qualified
