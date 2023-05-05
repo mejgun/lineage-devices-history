@@ -56,19 +56,18 @@ update :: DeviceMap -> IO DeviceMap
 update m = HM.union <$> readMaps paths <*> pure m
 
 readMaps :: [FilePath] -> IO DeviceMap
-readMaps files = do
-  HM.fromList . toEntryList <$> readFiles files
+readMaps files = HM.fromList . toEntryList <$> readFiles files
   where
     toEntryList = fmap (\e -> (T.unpack (model e), e))
 
 readFiles :: [FilePath] -> IO [Item]
-readFiles files = s r
+readFiles files = ps >>= r >>= s
   where
     ps :: IO [FilePath]
     ps = filterM doesFileExist files
-    r :: IO [IO (Either String [Item])]
-    r = fmap eitherDecodeFileStrict <$> ps
-    s :: IO [IO (Either String [Item])] -> IO [Item]
-    s x = do
-      y <- sequence <$> x
-      concat . rights <$> y
+
+    r :: [FilePath] -> IO [IO (Either String [Item])]
+    r = pure . fmap eitherDecodeFileStrict
+
+    s :: [IO (Either String [Item])] -> IO [Item]
+    s x = concat . rights <$> sequence x
