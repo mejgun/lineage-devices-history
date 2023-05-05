@@ -6,6 +6,7 @@ module Git
     Commit,
     openRepo,
     checkout,
+    leaveRepo,
   )
 where
 
@@ -23,6 +24,9 @@ openRepo path =
     >> P.readProcess "git" ["stash"] ""
     >> P.readProcessWithExitCode "git" ["stash", "drop"] ""
     >> checkout "master"
+
+leaveRepo :: IO ()
+leaveRepo = checkout "master" >> D.setCurrentDirectory ".."
 
 checkout :: String -> IO ()
 checkout commit = void $ P.readProcess "git" ["checkout", "--quiet", commit] ""

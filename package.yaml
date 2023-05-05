@@ -29,6 +29,7 @@ dependencies:
 - directory
 - time
 - unordered-containers
+- blaze-html
 
 ghc-options:
 - -Wall

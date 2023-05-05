@@ -27,6 +27,7 @@ library
   exposed-modules:
       Diff
       Git
+      Html
       Lib
       Los.BuildFile
       Los.BuildFile.Parser
@@ -40,6 +41,7 @@ library
       aeson
     , attoparsec
     , base >=4.7 && <5
+    , blaze-html
     , bytestring
     , directory
     , process
@@ -59,6 +61,7 @@ executable lineageos-history-exe
       aeson
     , attoparsec
     , base >=4.7 && <5
+    , blaze-html
     , bytestring
     , directory
     , lineageos-history
@@ -80,6 +83,7 @@ test-suite lineageos-history-test
       aeson
     , attoparsec
     , base >=4.7 && <5
+    , blaze-html
     , bytestring
     , directory
     , lineageos-history
