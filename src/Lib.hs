@@ -19,9 +19,10 @@ type Acc = (Los.Devices.DeviceMap, CommitMap)
 
 start :: IO ()
 start = do
+  initDevices <- Los.Devices.init
   Git.openRepo "hudson"
   l <- Git.listCommits
-  (res1, res2) <- foldM handleCommit (HM.empty, HM.empty) l
+  (res1, res2) <- foldM handleCommit (initDevices, HM.empty) l
   putStrLn ""
   _ <- P.readProcess "git" ["checkout", "master"] ""
   let commits = sortOn (snd . fst) $ filter (not . null . snd) $ HM.toList res2

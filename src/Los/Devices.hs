@@ -4,6 +4,7 @@
 
 module Los.Devices
   ( Los.Devices.update,
+    Los.Devices.init,
     DeviceMap,
     Item (..),
   )
@@ -29,6 +30,9 @@ paths =
     "getcm-devices/devices.json"
   ]
 
+initPath :: FilePath
+initPath = "devices.json"
+
 data Item = Item
   { model :: Text,
     oem :: Text,
@@ -45,17 +49,23 @@ instance FromJSON Item where
 
 type DeviceMap = HM.HashMap String Item
 
-update :: DeviceMap -> IO DeviceMap
-update m = do
-  r <- readFiles
-  let tempMap = HM.fromList $ fmap (\e -> (T.unpack (model e), e)) r
-  pure $ HM.union tempMap m
+init :: IO DeviceMap
+init = readMaps [initPath]
 
-readFiles :: IO [Item]
-readFiles = s r
+update :: DeviceMap -> IO DeviceMap
+update m = HM.union <$> readMaps paths <*> pure m
+
+readMaps :: [FilePath] -> IO DeviceMap
+readMaps files = do
+  HM.fromList . toEntryList <$> readFiles files
+  where
+    toEntryList = fmap (\e -> (T.unpack (model e), e))
+
+readFiles :: [FilePath] -> IO [Item]
+readFiles files = s r
   where
     ps :: IO [FilePath]
-    ps = filterM doesFileExist paths
+    ps = filterM doesFileExist files
     r :: IO [IO (Either String [Item])]
     r = fmap eitherDecodeFileStrict <$> ps
     s :: IO [IO (Either String [Item])] -> IO [Item]

@@ -2,7 +2,6 @@ dist
 dist-*
 cabal-dev
 *~
-*.json
 *.o
 *.hi
 *.hie

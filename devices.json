@@ -1,0 +1,17 @@
+[
+  {
+    "model": "m7wls",
+    "oem": "HTC",
+    "name": "One M7 (Sprint)"
+  },
+  {
+    "model": "t0ltektt",
+    "oem": "Samsung",
+    "name": "Galaxy NOTE 2 LTE Korea"
+  },
+  {
+    "model": "t0lteskt",
+    "oem": "Samsung",
+    "name": "Galaxy NOTE 2 LTE SK Telecom"
+  }
+]
