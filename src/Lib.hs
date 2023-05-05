@@ -3,7 +3,7 @@
 
 module Lib (Lib.start) where
 
-import Control.Monad (foldM, foldM_)
+import Control.Monad (foldM)
 import Data.HashMap.Strict qualified as HM
 import Data.List (sortOn)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
@@ -22,12 +22,14 @@ start = do
   initDevices <- Los.Devices.init
   Git.openRepo "hudson"
   l <- Git.listCommits
-  (res1, res2) <- foldM handleCommit (initDevices, HM.empty) l
+  (_res1, res2) <- foldM handleCommit (initDevices, HM.empty) l
   Git.checkout "master"
   let commits = sortOn (snd . fst) $ filter (not . null . snd) $ HM.toList res2
   -- mapM_ print $ sortOn fst $ HM.toList res1
   -- mapM_ print commits
-  foldM_ (Diff.printDelta res1) (("", posixSecondsToUTCTime 1), []) commits
+  -- Diff.get res1
+  let (diffs, _) = foldl getDelta ([], (("", posixSecondsToUTCTime 1), [])) commits
+  mapM_ print $ filter (not . null . snd) diffs
   putStrLn "done"
 
 handleCommit :: Acc -> Git.Commit -> IO Acc
@@ -36,3 +38,10 @@ handleCommit (devs, commits) c@(cmt, _) = do
   newdevs <- Los.Devices.update devs
   ts <- Los.BuildFile.read
   pure (newdevs, HM.insert c ts commits)
+
+type ListEntry = (Git.Commit, [Los.BuildFile.Parser.Target])
+
+getDelta :: ([Diff.Diffs], ListEntry) -> ListEntry -> ([Diff.Diffs], ListEntry)
+getDelta _acc@(deltas, oldcommit) commit =
+  let d = Diff.get oldcommit commit
+   in (deltas ++ [d], commit)
