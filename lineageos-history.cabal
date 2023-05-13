@@ -32,6 +32,7 @@ library
       Los.BuildFile
       Los.BuildFile.Parser
       Los.Devices
+      Types
   other-modules:
       Paths_lineageos_history
   hs-source-dirs:
@@ -44,6 +45,7 @@ library
     , blaze-html
     , bytestring
     , directory
+    , hashable
     , process
     , text
     , time
@@ -64,6 +66,7 @@ executable lineageos-history-exe
     , blaze-html
     , bytestring
     , directory
+    , hashable
     , lineageos-history
     , process
     , text
@@ -86,6 +89,7 @@ test-suite lineageos-history-test
     , blaze-html
     , bytestring
     , directory
+    , hashable
     , lineageos-history
     , process
     , text

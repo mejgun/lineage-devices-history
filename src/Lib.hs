@@ -13,10 +13,11 @@ import Html (saveDiffs)
 import Los.BuildFile qualified
 import Los.BuildFile.Parser qualified
 import Los.Devices qualified
+import Types qualified
 
 type CommitMap = HM.HashMap Git.Commit [Los.BuildFile.Parser.Target]
 
-type Acc = (Los.Devices.DeviceMap, CommitMap)
+type Acc = (Types.DeviceMap, CommitMap)
 
 start :: IO ()
 start = do

@@ -29,6 +29,7 @@ dependencies:
 - directory
 - time
 - unordered-containers
+- hashable
 - blaze-html
 
 ghc-options:

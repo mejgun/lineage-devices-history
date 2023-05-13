@@ -9,22 +9,26 @@ import Data.Text qualified as T
 import Data.Time.Format qualified as Time
 import Diff qualified
 import Los.BuildFile.Parser qualified as P
-import Los.Devices qualified
 import System.Directory qualified as D
 import Text.Blaze.Html.Renderer.Pretty qualified as RP
 import Text.Blaze.Html5 as H
+import Types qualified
 
 path :: FilePath
 path = "html"
 
-saveDiffs :: Los.Devices.DeviceMap -> [Diff.Diffs] -> IO ()
-saveDiffs devices xs = do
+saveDiffs :: Types.DeviceMap -> [Diff.Diffs] -> IO ()
+saveDiffs dm@(Types.DeviceMap devices) xs = do
   D.setCurrentDirectory path
-  forM_ (HM.keys devices) (\e -> writeHtml (T.unpack e ++ ".html") (makeDiffs e devices (filterDiffByDevice e xs)))
-  writeHtml "all.html" $ makeDiffs "All" devices xs
+  forM_
+    (HM.keys devices)
+    ( \(Types.Model e) ->
+        writeHtml (T.unpack e ++ ".html") (makeDiffs e dm (filterDiffByDevice e xs))
+    )
+  writeHtml "all.html" $ makeDiffs "All" dm xs
   D.setCurrentDirectory ".."
 
-makeDiffs :: T.Text -> Los.Devices.DeviceMap -> [Diff.Diffs] -> H.Html
+makeDiffs :: T.Text -> Types.DeviceMap -> [Diff.Diffs] -> H.Html
 makeDiffs hdr devices xs = H.html $ do
   H.head (H.title (H.toHtml hdr))
   H.body $ do
@@ -45,8 +49,8 @@ filterDiffByDevice d = foldr f []
     f2 (Diff.Removed (P.Target mdl _)) = mdl == d
     f2 (Diff.Switched (P.Target mdl _) _) = mdl == d
 
-diffToHtml :: Los.Devices.DeviceMap -> Diff.Diffs -> H.Html
-diffToHtml devices ((_, ct), xs) = H.tr $ do
+diffToHtml :: Types.DeviceMap -> Diff.Diffs -> H.Html
+diffToHtml (Types.DeviceMap devices) ((_, ct), xs) = H.tr $ do
   H.td $ H.toHtml (formatTime ct)
   H.td $ H.ul $ forM_ xs (H.li . H.p . H.toHtml . toString)
   where
@@ -59,8 +63,8 @@ diffToHtml devices ((_, ct), xs) = H.tr $ do
       T.concat ["(", mdl, ") ", name mdl, " switched from ", brnch1, " to ", brnch2]
 
     name :: T.Text -> T.Text
-    name m = case HM.lookup m devices of
-      Just (Los.Devices.Item _ brnd nm) -> T.concat [brnd, " ", nm]
+    name m = case HM.lookup (Types.Model m) devices of
+      Just (Types.OEM brnd, Types.Name nm) -> T.concat [brnd, " ", nm]
       Nothing -> error $ "unknown device" ++ show m
 
     formatTime = Time.formatTime Time.defaultTimeLocale "%F %R"
