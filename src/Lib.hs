@@ -6,18 +6,14 @@ module Lib (Lib.start) where
 import Control.Monad (foldM)
 import Data.HashMap.Strict qualified as HM
 import Data.List (sortOn)
-import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import Diff qualified
 import Git qualified
 import Html (saveDiffs)
 import Los.BuildFile qualified
-import Los.BuildFile.Parser qualified
 import Los.Devices qualified
 import Types qualified
 
-type CommitMap = HM.HashMap Git.Commit [Los.BuildFile.Parser.Target]
-
-type Acc = (Types.DeviceMap, CommitMap)
+type CommitMap = HM.HashMap Git.Commit Types.TargetMap
 
 start :: IO ()
 start = do
@@ -26,13 +22,17 @@ start = do
   l <- Git.listCommits
   (res1, res2) <- foldM handleCommit (initDevices, HM.empty) l
   Git.leaveRepo
-  let commits = sortOn (snd . fst) $ filter (not . null . snd) $ HM.toList res2
+  let commits =
+        sortOn (snd . fst) $
+          filter (\(_, Types.TargetMap x) -> not (HM.null x)) $
+            HM.toList res2
   -- mapM_ print $ sortOn fst $ HM.toList res1
-  -- mapM_ print commits
   -- Diff.get res1
-  let (diffs, _) = foldl getDelta ([], (("", posixSecondsToUTCTime 1), [])) commits
+  let (diffs, _) = foldl getDelta ([], Types.TargetMap HM.empty) commits
   saveDiffs res1 $ filter (not . null . snd) diffs
   putStrLn "done"
+
+type Acc = (Types.DeviceMap, CommitMap)
 
 handleCommit :: Acc -> Git.Commit -> IO Acc
 handleCommit (devs, commits) c@(cmt, _) = do
@@ -41,9 +41,9 @@ handleCommit (devs, commits) c@(cmt, _) = do
   ts <- Los.BuildFile.read
   pure (newdevs, HM.insert c ts commits)
 
-type ListEntry = (Git.Commit, [Los.BuildFile.Parser.Target])
+type Acc2 = ([(Git.Commit, [Diff.Action])], Types.TargetMap)
 
-getDelta :: ([Diff.Diffs], ListEntry) -> ListEntry -> ([Diff.Diffs], ListEntry)
-getDelta _acc@(deltas, oldcommit) commit =
-  let d = Diff.get oldcommit commit
-   in (deltas ++ [d], commit)
+getDelta :: Acc2 -> (Git.Commit, Types.TargetMap) -> Acc2
+getDelta _acc@(deltas, oldcommit) _commit@(c, m) =
+  let d = Diff.get oldcommit m
+   in (deltas ++ [(c, d)], m)

@@ -10,6 +10,8 @@ module Types
     Name (..),
     devicelistToMap,
     concatDevicemaps,
+    Branch (..),
+    TargetMap (..),
   )
 where
 
@@ -21,7 +23,7 @@ import Data.Hashable qualified
 import Data.Text qualified as T
 import GHC.Generics (Generic)
 
-newtype Model = Model T.Text deriving (Eq, Generic)
+newtype Model = Model T.Text deriving (Eq, Generic, Show)
 
 instance Data.Hashable.Hashable Model
 
@@ -30,6 +32,12 @@ newtype OEM = OEM T.Text
 newtype Name = Name T.Text
 
 newtype Device = Device (Model, (OEM, Name))
+
+newtype Branch = Branch T.Text
+  deriving (Eq, Show)
+
+newtype TargetMap = TargetMap (HM.HashMap Types.Model [Types.Branch])
+  deriving (Show)
 
 newtype DeviceMap = DeviceMap (HM.HashMap Types.Model (Types.OEM, Types.Name))
 

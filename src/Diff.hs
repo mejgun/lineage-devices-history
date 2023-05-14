@@ -1,40 +1,33 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 
-module Diff (get, Diffs, Action (..)) where
+module Diff (get, Action (..)) where
 
-import Data.Maybe (isNothing, mapMaybe)
-import Git qualified
-import Los.BuildFile.Parser qualified as P
+import Data.HashMap.Strict qualified as HM
+import Types qualified
 
 data Action
-  = Added P.Target
-  | Switched P.Target P.Target
-  | Removed P.Target
-  deriving (Show)
+  = Added Types.Model [Types.Branch]
+  | Switched Types.Model [Types.Branch] [Types.Branch]
+  | Removed Types.Model [Types.Branch]
 
-type Diffs = (Git.Commit, [Action])
-
-get :: (Git.Commit, [P.Target]) -> (Git.Commit, [P.Target]) -> Diffs
-get _prevCommit@(_, od) _newCommit@(cmt, nd) =
-  (cmt, addswitch ++ remov)
+get :: Types.TargetMap -> Types.TargetMap -> [Action]
+get prev new = added ++ switched ++ removed
   where
-    addswitch = mapMaybe (getAction od) nd
-    remov = Removed <$> getRemoved od nd
+    added = getAdded prev new
+    removed = getRemoved prev new
+    switched = getSwitched prev new
 
-getRemoved :: [P.Target] -> [P.Target] -> [P.Target]
-getRemoved xs ys = filter (isNothing . isExist ys) xs
+getAdded :: Types.TargetMap -> Types.TargetMap -> [Action]
+getAdded (Types.TargetMap prev) (Types.TargetMap new) =
+  map (uncurry Added) . HM.toList $ HM.difference new prev
 
-getAction :: [P.Target] -> P.Target -> Maybe Action
-getAction xs y = do
-  case isExist xs y of
-    Nothing -> Just $ Added y
-    Just x -> isSwitched x y
-      where
-        isSwitched (P.Target _ ot) (P.Target _ nt)
-          | ot == nt = Nothing
-          | otherwise = Just $ Switched x y
+getRemoved :: Types.TargetMap -> Types.TargetMap -> [Action]
+getRemoved (Types.TargetMap prev) (Types.TargetMap new) =
+  map (uncurry Removed) . HM.toList $ HM.difference prev new
 
-isExist :: [P.Target] -> P.Target -> Maybe P.Target
-isExist xs (P.Target ym _) = case filter (\(P.Target xm _) -> xm == ym) xs of
-  [x] -> Just x
-  _ -> Nothing
+getSwitched :: Types.TargetMap -> Types.TargetMap -> [Action]
+getSwitched (Types.TargetMap prev) (Types.TargetMap new) =
+  map (\(mdl, (fromBrnchs, toBrnchs)) -> Switched mdl fromBrnchs toBrnchs)
+    . filter (\(_, (x, y)) -> x /= y)
+    . HM.toList
+    $ HM.intersectionWith (,) prev new
