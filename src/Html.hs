@@ -9,6 +9,7 @@ import Data.Text qualified as T
 import Data.Time.Format qualified as Time
 import Diff qualified
 import Git qualified
+import Html.Action qualified
 import System.Directory qualified as D
 import Text.Blaze.Html.Renderer.Pretty qualified as RP
 import Text.Blaze.Html5 qualified as H
@@ -45,7 +46,7 @@ makeDiffs hdr devices xs = H.html $ do
     H.title $ H.toHtml hdr
   H.body $ do
     H.h1 (H.toHtml hdr)
-    H.table H.! HA.class_ "table" $
+    H.table H.! HA.class_ "table is-bordered is-striped" $
       H.tbody $
         forM_ xs (diffToHtml devices)
 
@@ -64,41 +65,20 @@ filterDiffByDevice d = foldr f []
     f2 (Diff.Switched mdl _ _) = mdl == d
 
 diffToHtml :: Types.DeviceMap -> Diffs -> H.Html
-diffToHtml (Types.DeviceMap devices) ((_, ct), xs) =
+diffToHtml devices ((_, ct), xs) =
   case xs of
     [] -> error "actions list empty"
-    [x] -> H.tr $ do cmtSingle; actionRow x
+    [x] -> H.tr $ do cmtSingle; diff x
     (h : t) -> do
       H.tr $ do
         cmtRow
-        actionRow h
-      mapM_ (H.tr . actionRow) t
+        diff h
+      mapM_ (H.tr . diff) t
   where
     cmtRow = H.td H.! HA.rowspan (H.stringValue (show (length xs))) $ H.toHtml (formatTime ct)
 
     cmtSingle = H.td $ H.toHtml (formatTime ct)
 
-    actionRow = toRow . toString
-
-    toRow :: (T.Text, T.Text) -> H.Html
-    toRow (m, s) = do
-      H.td (H.toHtml m)
-      H.td (H.toHtml s)
-
-    toString :: Diff.Action -> (T.Text, T.Text)
-    toString (Diff.Added (Types.Model mdl) brnch) =
-      (mdl, T.concat ["Added ", name mdl, " branch ", brnchsToText brnch])
-    toString (Diff.Removed (Types.Model mdl) brnch) =
-      (mdl, T.concat ["Removed ", name mdl, " branch ", brnchsToText brnch])
-    toString (Diff.Switched (Types.Model mdl) brnch1 brnch2) =
-      (mdl, T.concat [name mdl, " switched from ", brnchsToText brnch1, " to ", brnchsToText brnch2])
-
-    brnchsToText :: [Types.Branch] -> T.Text
-    brnchsToText = T.intercalate ", " . map (\(Types.Branch b) -> b)
-
-    name :: T.Text -> T.Text
-    name m = case HM.lookup (Types.Model m) devices of
-      Just (Types.OEM brnd, Types.Name nm) -> T.concat [brnd, " ", nm]
-      Nothing -> error $ "unknown device" ++ show m
+    diff = Html.Action.toHtml devices
 
     formatTime = Time.formatTime Time.defaultTimeLocale "%F %R"

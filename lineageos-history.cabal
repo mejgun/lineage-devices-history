@@ -28,6 +28,7 @@ library
       Diff
       Git
       Html
+      Html.Action
       Lib
       Los.BuildFile
       Los.BuildFile.Parser
