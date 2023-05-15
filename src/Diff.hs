@@ -9,6 +9,7 @@ data Action
   = Added Types.Model [Types.Branch]
   | Switched Types.Model [Types.Branch] [Types.Branch]
   | Removed Types.Model [Types.Branch]
+  deriving (Eq, Show)
 
 get :: Types.TargetMap -> Types.TargetMap -> [Action]
 get prev new = added ++ switched ++ removed

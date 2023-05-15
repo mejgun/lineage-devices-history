@@ -78,6 +78,8 @@ test-suite lineageos-history-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      DiffSpec
+      ParserSpec
       Paths_lineageos_history
   hs-source-dirs:
       test
