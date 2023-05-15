@@ -11,7 +11,7 @@ import Diff qualified
 import Git qualified
 import Html.Action qualified
 import System.Directory qualified as D
-import Text.Blaze.Html.Renderer.Pretty qualified as RP
+import Text.Blaze.Html.Renderer.String (renderHtml)
 import Text.Blaze.Html5 qualified as H
 import Text.Blaze.Html5.Attributes qualified as HA
 import Types qualified
@@ -27,17 +27,21 @@ type Diffs = (Git.Commit, [Diff.Action])
 saveDiffs :: Types.DeviceMap -> [Diffs] -> IO ()
 saveDiffs dm@(Types.DeviceMap devices) xs = do
   D.setCurrentDirectory path
+  let deviceDiffs =
+        filter (not . null . snd) $
+          map (\m -> (m, filterDiffByDevice xs m)) (HM.keys devices)
   forM_
-    (HM.keys devices)
-    ( \mdl@(Types.Model e) ->
+    deviceDiffs
+    ( \(Types.Model m, diffs) ->
         writeHtml
-          (T.unpack e ++ ".html")
-          (makeDiffs e dm (filterDiffByDevice mdl xs))
+          (T.unpack m ++ ".html")
+          (makeDiffs m dm diffs)
     )
   writeHtml "all.html" $ makeDiffs "All" dm xs
   D.setCurrentDirectory ".."
 
 makeDiffs :: T.Text -> Types.DeviceMap -> [Diffs] -> H.Html
+makeDiffs hdr _ [] = error $ "empty diff for " ++ T.unpack hdr
 makeDiffs hdr devices xs = H.html $ do
   H.head $ do
     H.meta H.! HA.charset "utf-8"
@@ -51,10 +55,10 @@ makeDiffs hdr devices xs = H.html $ do
         forM_ xs (diffToHtml devices)
 
 writeHtml :: FilePath -> H.Html -> IO ()
-writeHtml f h = writeFile f $ RP.renderHtml h
+writeHtml f h = writeFile f $ renderHtml h
 
-filterDiffByDevice :: Types.Model -> [Diffs] -> [Diffs]
-filterDiffByDevice d = foldr f []
+filterDiffByDevice :: [Diffs] -> Types.Model -> [Diffs]
+filterDiffByDevice xs d = foldr f [] xs
   where
     f (c, difs) acc = case filter f2 difs of
       [] -> acc
