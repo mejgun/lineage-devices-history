@@ -83,13 +83,15 @@ test-suite lineageos-history-test
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      aeson
+      QuickCheck
+    , aeson
     , attoparsec
     , base >=4.7 && <5
     , blaze-html
     , bytestring
     , directory
     , hashable
+    , hspec
     , lineageos-history
     , process
     , text

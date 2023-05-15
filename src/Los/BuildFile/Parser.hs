@@ -33,7 +33,7 @@ parseLines xs = toMap $ foldr f [] $ mapMaybe parseLine xs
     inlist (Target e1 _) (Target e2 _) = e1 == e2
 
     concatTargets (Target md1 b1) (Target md2 b2)
-      | md1 == md2 = Target md1 (nub (b1 ++ b2))
+      | md1 == md2 = Target md1 (nub (b2 ++ b1))
       | otherwise = error "could not be either"
 
 parseLine :: BS.ByteString -> Maybe Target

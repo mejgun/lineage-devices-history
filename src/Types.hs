@@ -37,7 +37,7 @@ newtype Branch = Branch T.Text
   deriving (Eq, Show)
 
 newtype TargetMap = TargetMap (HM.HashMap Types.Model [Types.Branch])
-  deriving (Show)
+  deriving (Eq, Show)
 
 newtype DeviceMap = DeviceMap (HM.HashMap Types.Model (Types.OEM, Types.Name))
 

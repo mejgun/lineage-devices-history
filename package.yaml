@@ -68,3 +68,5 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - lineageos-history
+    - hspec
+    - QuickCheck
