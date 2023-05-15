@@ -12,10 +12,14 @@ import Git qualified
 import System.Directory qualified as D
 import Text.Blaze.Html.Renderer.Pretty qualified as RP
 import Text.Blaze.Html5 qualified as H
+import Text.Blaze.Html5.Attributes qualified as HA
 import Types qualified
 
 path :: FilePath
 path = "html"
+
+css :: H.AttributeValue
+css = "https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
 
 type Diffs = (Git.Commit, [Diff.Action])
 
@@ -34,10 +38,16 @@ saveDiffs dm@(Types.DeviceMap devices) xs = do
 
 makeDiffs :: T.Text -> Types.DeviceMap -> [Diffs] -> H.Html
 makeDiffs hdr devices xs = H.html $ do
-  H.head (H.title (H.toHtml hdr))
+  H.head $ do
+    H.meta H.! HA.charset "utf-8"
+    H.meta H.! HA.name "viewport" H.! HA.content "width=device-width, initial-scale=1"
+    H.link H.! HA.rel "stylesheet" H.! HA.href css
+    H.title $ H.toHtml hdr
   H.body $ do
     H.h1 (H.toHtml hdr)
-    H.table $ forM_ xs (diffToHtml devices)
+    H.table H.! HA.class_ "table" $
+      H.tbody $
+        forM_ xs (diffToHtml devices)
 
 writeHtml :: FilePath -> H.Html -> IO ()
 writeHtml f h = writeFile f $ RP.renderHtml h
@@ -54,19 +64,32 @@ filterDiffByDevice d = foldr f []
     f2 (Diff.Switched mdl _ _) = mdl == d
 
 diffToHtml :: Types.DeviceMap -> Diffs -> H.Html
-diffToHtml (Types.DeviceMap devices) ((_, ct), xs) = H.tr $ do
-  H.td $ H.toHtml (formatTime ct)
-  H.td $ H.table $ forM_ xs (toRow . toString)
+diffToHtml (Types.DeviceMap devices) ((_, ct), xs) =
+  case xs of
+    [] -> error "actions list empty"
+    [x] -> H.tr $ do cmtSingle; actionRow x
+    (h : t) -> do
+      H.tr $ do
+        cmtRow
+        actionRow h
+      mapM_ (H.tr . actionRow) t
   where
-    toRow (m, s) = H.tr $ do
+    cmtRow = H.td H.! HA.rowspan (H.stringValue (show (length xs))) $ H.toHtml (formatTime ct)
+
+    cmtSingle = H.td $ H.toHtml (formatTime ct)
+
+    actionRow = toRow . toString
+
+    toRow :: (T.Text, T.Text) -> H.Html
+    toRow (m, s) = do
       H.td (H.toHtml m)
       H.td (H.toHtml s)
 
     toString :: Diff.Action -> (T.Text, T.Text)
     toString (Diff.Added (Types.Model mdl) brnch) =
       (mdl, T.concat ["Added ", name mdl, " branch ", brnchsToText brnch])
-    toString (Diff.Removed (Types.Model mdl) _) =
-      (mdl, T.concat ["Removed ", name mdl])
+    toString (Diff.Removed (Types.Model mdl) brnch) =
+      (mdl, T.concat ["Removed ", name mdl, " branch ", brnchsToText brnch])
     toString (Diff.Switched (Types.Model mdl) brnch1 brnch2) =
       (mdl, T.concat [name mdl, " switched from ", brnchsToText brnch1, " to ", brnchsToText brnch2])
 

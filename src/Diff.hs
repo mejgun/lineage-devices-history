@@ -13,9 +13,19 @@ data Action
 get :: Types.TargetMap -> Types.TargetMap -> [Action]
 get prev new = added ++ switched ++ removed
   where
-    added = getAdded prev new
-    removed = getRemoved prev new
-    switched = getSwitched prev new
+    p = removeSameBranches prev new
+    n = removeSameBranches new prev
+    added = getAdded p n
+    removed = getRemoved p n
+    switched = getSwitched p n
+
+removeSameBranches :: Types.TargetMap -> Types.TargetMap -> Types.TargetMap
+removeSameBranches (Types.TargetMap m1) (Types.TargetMap m2) =
+  Types.TargetMap $ HM.filter (not . null) $ HM.mapWithKey fix m1
+  where
+    fix k v = case HM.lookup k m2 of
+      Nothing -> v
+      Just v2 -> filter (`notElem` v2) v
 
 getAdded :: Types.TargetMap -> Types.TargetMap -> [Action]
 getAdded (Types.TargetMap prev) (Types.TargetMap new) =
@@ -28,6 +38,6 @@ getRemoved (Types.TargetMap prev) (Types.TargetMap new) =
 getSwitched :: Types.TargetMap -> Types.TargetMap -> [Action]
 getSwitched (Types.TargetMap prev) (Types.TargetMap new) =
   map (\(mdl, (fromBrnchs, toBrnchs)) -> Switched mdl fromBrnchs toBrnchs)
-    . filter (\(_, (x, y)) -> x /= y)
+    -- . filter (\(_, (x, y)) -> x /= y)
     . HM.toList
     $ HM.intersectionWith (,) prev new
