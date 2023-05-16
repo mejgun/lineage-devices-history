@@ -12,6 +12,7 @@ import Git qualified
 import Html.Action qualified
 import Html.Header qualified
 import Html.Index qualified
+import Html.Link qualified
 import System.Directory qualified as D
 import Text.Blaze.Html.Renderer.String (renderHtml)
 import Text.Blaze.Html5 qualified as H
@@ -61,6 +62,7 @@ saveDiffs dm@(Types.DeviceMap devices) xs = do
 makeDiffs :: T.Text -> Types.DeviceMap -> [Diffs] -> H.Html
 makeDiffs hdr _ [] = error $ "empty diff for " ++ T.unpack hdr
 makeDiffs hdr devices xs = Html.Header.put hdr $ do
+  Html.Link.index
   H.table H.! HA.class_ "table is-bordered is-striped" $
     H.tbody $
       forM_ xs (diffToHtml devices)

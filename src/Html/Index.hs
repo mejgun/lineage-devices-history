@@ -16,6 +16,9 @@ write :: Types.DeviceMap -> HM.HashMap Types.OEM [Types.Model] -> H.Html
 write (Types.DeviceMap devices) brands = Html.Header.put "index" $ do
   H.table H.! HA.class_ "table is-bordered is-striped" $
     H.tbody $ do
+      H.tr $ do
+        H.td $ Html.Link.all
+        H.td $ H.p ""
       mapM_
         ( \(oem, vs) ->
             H.tr $

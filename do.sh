@@ -1,9 +1,10 @@
 set -ex
+stack build --pedantic --copy-bins --local-bin-path .
 #git clone https://github.com/LineageOS/hudson
 cd hudson
 git pull
 cd ..
-rm -ri html
+rm -fr html
 mkdir html/device html/brand -p
 ./lineageos-history-exe
 
