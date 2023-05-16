@@ -27,7 +27,9 @@ newtype Model = Model T.Text deriving (Eq, Generic, Show)
 
 instance Data.Hashable.Hashable Model
 
-newtype OEM = OEM T.Text
+newtype OEM = OEM T.Text deriving (Eq, Generic)
+
+instance Data.Hashable.Hashable OEM
 
 newtype Name = Name T.Text
 

@@ -53,9 +53,10 @@ modelToHtml (Types.Model mdl) = H.td $ H.toHtml mdl
 nameToHtml :: Types.DeviceMap -> Types.Model -> H.Html
 nameToHtml (Types.DeviceMap devices) mdl@(Types.Model m) =
   case HM.lookup mdl devices of
-    Just (Types.OEM o, Types.Name n) ->
-      H.td $ do
-        H.toHtml o
-        " "
-        H.a H.! HA.href (H.textValue (T.concat [m, ".html"])) $ H.toHtml n
+    Just (Types.OEM o, Types.Name n) -> do
+      H.td $ link "brand" o o
+      H.td $ link "device" m n
     _ -> error "device not found, could not be"
+  where
+    link path file text =
+      H.a H.! HA.href (H.textValue (T.concat ["/", path, "/", file, ".html"])) $ H.toHtml text
