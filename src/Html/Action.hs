@@ -7,6 +7,7 @@ import Data.HashMap.Strict qualified as HM
 import Data.List qualified as List
 import Data.Text qualified as T
 import Diff qualified
+import Html.Link qualified
 import Text.Blaze.Html5 qualified as H
 import Text.Blaze.Html5.Attributes qualified as HA
 import Types qualified
@@ -51,12 +52,9 @@ modelToHtml :: Types.Model -> H.Html
 modelToHtml (Types.Model mdl) = H.td $ H.toHtml mdl
 
 nameToHtml :: Types.DeviceMap -> Types.Model -> H.Html
-nameToHtml (Types.DeviceMap devices) mdl@(Types.Model m) =
+nameToHtml (Types.DeviceMap devices) mdl =
   case HM.lookup mdl devices of
-    Just (Types.OEM o, Types.Name n) -> do
-      H.td $ link "brand" o o
-      H.td $ link "device" m n
+    Just (o, n) -> do
+      H.td $ Html.Link.brand o
+      H.td $ Html.Link.device mdl n
     _ -> error "device not found, could not be"
-  where
-    link path file text =
-      H.a H.! HA.href (H.textValue (T.concat ["/", path, "/", file, ".html"])) $ H.toHtml text

@@ -29,6 +29,9 @@ library
       Git
       Html
       Html.Action
+      Html.Header
+      Html.Index
+      Html.Link
       Lib
       Los.BuildFile
       Los.BuildFile.Parser

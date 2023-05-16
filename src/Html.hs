@@ -10,6 +10,8 @@ import Data.Time.Format qualified as Time
 import Diff qualified
 import Git qualified
 import Html.Action qualified
+import Html.Header qualified
+import Html.Index qualified
 import System.Directory qualified as D
 import Text.Blaze.Html.Renderer.String (renderHtml)
 import Text.Blaze.Html5 qualified as H
@@ -18,9 +20,6 @@ import Types qualified
 
 path :: FilePath
 path = "html"
-
-css :: H.AttributeValue
-css = "https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
 
 type Diffs = (Git.Commit, [Diff.Action])
 
@@ -56,21 +55,15 @@ saveDiffs dm@(Types.DeviceMap devices) xs = do
           (makeDiffs brnd dm diffs)
     )
   writeHtml "all.html" $ makeDiffs "All" dm xs
+  writeHtml "index.html" $ Html.Index.write dm l
   D.setCurrentDirectory ".."
 
 makeDiffs :: T.Text -> Types.DeviceMap -> [Diffs] -> H.Html
 makeDiffs hdr _ [] = error $ "empty diff for " ++ T.unpack hdr
-makeDiffs hdr devices xs = H.html $ do
-  H.head $ do
-    H.meta H.! HA.charset "utf-8"
-    H.meta H.! HA.name "viewport" H.! HA.content "width=device-width, initial-scale=1"
-    H.link H.! HA.rel "stylesheet" H.! HA.href css
-    H.title $ H.toHtml hdr
-  H.body $ do
-    H.h1 (H.toHtml hdr)
-    H.table H.! HA.class_ "table is-bordered is-striped" $
-      H.tbody $
-        forM_ xs (diffToHtml devices)
+makeDiffs hdr devices xs = Html.Header.put hdr $ do
+  H.table H.! HA.class_ "table is-bordered is-striped" $
+    H.tbody $
+      forM_ xs (diffToHtml devices)
 
 writeHtml :: FilePath -> H.Html -> IO ()
 writeHtml f h = writeFile f $ renderHtml h
