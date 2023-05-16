@@ -6,6 +6,8 @@ module Html.Link
     brand,
     Html.Link.all,
     index,
+    github,
+    wiki,
   )
 where
 
@@ -33,3 +35,11 @@ all = (H.a H.! HA.href (H.textValue "/all.html")) "All devices"
 
 index :: H.Html
 index = H.a H.! HA.href (H.textValue "/index.html") $ "← Index"
+
+github :: H.Html
+github = H.a H.! HA.href (H.textValue "https://github.com/mejgun/lineage-devices-history") $ "GitHub"
+
+wiki :: Types.Model -> H.Html
+wiki (Types.Model m) =
+  (H.a H.! HA.href (H.textValue (T.concat ["https://wiki.lineageos.org/devices/", m, "/"])))
+    (H.toHtml m)

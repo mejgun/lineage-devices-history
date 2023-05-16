@@ -49,7 +49,7 @@ branchsToTags t =
     cl = H.textValue $ T.intercalate " " ["tag", "is-medium", t]
 
 modelToHtml :: Types.Model -> H.Html
-modelToHtml (Types.Model mdl) = H.td $ H.toHtml mdl
+modelToHtml mdl = H.td $ Html.Link.wiki mdl
 
 nameToHtml :: Types.DeviceMap -> Types.Model -> H.Html
 nameToHtml (Types.DeviceMap devices) mdl =
