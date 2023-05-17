@@ -6,7 +6,6 @@ module Html (saveDiffs) where
 import Control.Monad (forM_)
 import Data.HashMap.Strict qualified as HM
 import Data.Text qualified as T
-import Data.Time.Format qualified as Time
 import Diff qualified
 import Git qualified
 import Html.Action qualified
@@ -82,7 +81,7 @@ filterDiffByDevice xs d = foldr f [] xs
     f2 (Diff.Switched mdl _ _) = mdl `elem` d
 
 diffToHtml :: Types.DeviceMap -> Diffs -> H.Html
-diffToHtml devices ((_, ct), xs) =
+diffToHtml devices (commit, xs) =
   case xs of
     [] -> error "actions list empty"
     [x] -> H.tr $ do cmtSingle; diff x
@@ -92,10 +91,8 @@ diffToHtml devices ((_, ct), xs) =
         diff h
       mapM_ (H.tr . diff) t
   where
-    cmtRow = H.td H.! HA.rowspan (H.stringValue (show (length xs))) $ H.toHtml (formatTime ct)
+    cmtRow = H.td H.! HA.rowspan (H.stringValue (show (length xs))) $ Html.Link.hudson commit
 
-    cmtSingle = H.td $ H.toHtml (formatTime ct)
+    cmtSingle = H.td $ Html.Link.hudson commit
 
     diff = Html.Action.toHtml devices
-
-    formatTime = Time.formatTime Time.defaultTimeLocale "%F %R"
