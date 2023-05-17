@@ -1,5 +1,3 @@
-{-# LANGUAGE ImportQualifiedPost #-}
-
 module Diff (get, Action (..)) where
 
 import Data.HashMap.Strict qualified as HM

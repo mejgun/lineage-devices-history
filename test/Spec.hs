@@ -1,5 +1,3 @@
-{-# LANGUAGE ImportQualifiedPost #-}
-
 import DiffSpec qualified
 import ParserSpec qualified
 

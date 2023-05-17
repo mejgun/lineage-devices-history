@@ -54,7 +54,7 @@ library
     , text
     , time
     , unordered-containers
-  default-language: Haskell2010
+  default-language: GHC2021
 
 executable lineageos-history-exe
   main-is: Main.hs
@@ -103,4 +103,4 @@ test-suite lineageos-history-test
     , text
     , time
     , unordered-containers
-  default-language: Haskell2010
+  default-language: GHC2021
