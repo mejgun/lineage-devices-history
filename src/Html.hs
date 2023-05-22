@@ -36,13 +36,14 @@ saveDiffs dm@(Types.DeviceMap devices) xs = do
           (makeDiffs m dm diffs)
     )
   let l =
-        HM.foldrWithKey
-          ( \m (o, _) acc ->
-              let old = HM.lookupDefault [] o acc
-               in HM.insert o (m : old) acc
-          )
-          HM.empty
-          devices
+        HM.map (filter (\m -> any (\(x, _) -> m == x) deviceDiffs)) $
+          HM.foldrWithKey
+            ( \m (o, _) acc ->
+                let old = HM.lookupDefault [] o acc
+                 in HM.insert o (m : old) acc
+            )
+            HM.empty
+            devices
   let brandDiffs =
         filter (not . null . snd) $
           map (\(brnd, mdls) -> (brnd, filterDiffByDevice xs mdls)) (HM.toList l)
