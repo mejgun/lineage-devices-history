@@ -6,5 +6,5 @@ git pull
 cd ..
 rm -fr html
 mkdir html/device html/brand -p
-./lineageos-history-exe
+time ./lineageos-history-exe
 
