@@ -3,7 +3,6 @@
 module Html.Index (write) where
 
 import Data.HashMap.Strict qualified as HM
-import Data.List (sortOn)
 import Data.Maybe (fromJust)
 import Html.Header qualified
 import Html.Link qualified
@@ -25,9 +24,10 @@ write (Types.DeviceMap devices) brands = Html.Header.put "index" $ do
                 H.td $ Html.Link.brand oem
                 H.td $ d vs
         )
-        (sortOn (\(Types.OEM k, _) -> k) (HM.toList brands))
+        (HM.toList brands)
   where
-    d =
+    d = m1 . m2
+    m1 =
       mapM_
         ( \(m@(Types.Model mn), n) -> H.p $
             do
@@ -36,5 +36,4 @@ write (Types.DeviceMap devices) brands = Html.Header.put "index" $ do
               H.toHtml mn
               ")"
         )
-        . sortOn (\(_, Types.Name n) -> n)
-        . map (\m -> let (_, n) = fromJust (HM.lookup m devices) in (m, n))
+    m2 = map (\m -> let (_, n) = fromJust (HM.lookup m devices) in (m, n))

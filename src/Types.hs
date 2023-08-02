@@ -21,7 +21,7 @@ import Data.Hashable qualified
 import Data.Text qualified as T
 import GHC.Generics (Generic)
 
-newtype Model = Model T.Text deriving (Eq, Generic, Show)
+newtype Model = Model T.Text deriving (Eq, Generic, Show, Ord)
 
 instance Data.Hashable.Hashable Model
 

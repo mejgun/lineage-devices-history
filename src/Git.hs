@@ -2,7 +2,7 @@
 
 module Git
   ( listCommits,
-    Commit,
+    Commit (..),
     openRepo,
     checkout,
     leaveRepo,
@@ -10,12 +10,23 @@ module Git
 where
 
 import Control.Monad (void)
+import Data.Hashable (Hashable (hashWithSalt))
+import Data.Text qualified as T
 import Data.Time (UTCTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import System.Directory qualified as D
 import System.Process qualified as P
 
-type Commit = (String, UTCTime)
+data Commit = Commit T.Text UTCTime deriving (Show)
+
+instance Eq Commit where
+  (Commit hash1 _) == (Commit hash2 _) = hash1 == hash2
+
+instance Ord Commit where
+  compare (Commit _ t1) (Commit _ t2) = compare t1 t2
+
+instance Hashable Commit where
+  hashWithSalt s (Commit h _) = s `hashWithSalt` h
 
 openRepo :: FilePath -> IO ()
 openRepo path =
@@ -27,8 +38,8 @@ openRepo path =
 leaveRepo :: IO ()
 leaveRepo = checkout "master" >> D.setCurrentDirectory ".."
 
-checkout :: String -> IO ()
-checkout commit = void $ P.readProcess "git" ["checkout", "--quiet", commit] ""
+checkout :: T.Text -> IO ()
+checkout commit = void $ P.readProcess "git" ["checkout", "--quiet", T.unpack commit] ""
 
 listCommits :: IO [Commit]
 listCommits = p >>= l >>= e
@@ -36,15 +47,15 @@ listCommits = p >>= l >>= e
     p :: IO String
     p = P.readProcess "git" ["log", "--pretty=format:%H %ct"] ""
 
-    l :: String -> IO [String]
-    l = pure . reverse . lines
+    l :: String -> IO [T.Text]
+    l = pure . reverse . T.lines . T.pack
 
-    e :: [String] -> IO [Commit]
+    e :: [T.Text] -> IO [Commit]
     e = pure . fmap parseLogEntry
 
-parseLogEntry :: String -> Commit
-parseLogEntry s = case words s of
-  [x1, x2] -> (x1, t)
+parseLogEntry :: T.Text -> Commit
+parseLogEntry s = case T.words s of
+  [x1, x2] -> Commit x1 t
     where
-      t = posixSecondsToUTCTime $ fromIntegral (read x2 :: Int)
-  _ -> error $ "bad log format: " ++ s
+      t = posixSecondsToUTCTime $ fromIntegral (read (T.unpack x2) :: Int)
+  _ -> error $ "bad log format: " ++ T.unpack s

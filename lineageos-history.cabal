@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.1.
+-- This file has been generated from package.yaml by hpack version 0.35.2.
 --
 -- see: https://github.com/sol/hpack
 
@@ -64,18 +64,8 @@ executable lineageos-history-exe
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      aeson
-    , attoparsec
-    , base >=4.7 && <5
-    , blaze-html
-    , bytestring
-    , directory
-    , hashable
+      base >=4.7 && <5
     , lineageos-history
-    , process
-    , text
-    , time
-    , unordered-containers
   default-language: GHC2021
 
 test-suite lineageos-history-test
@@ -84,23 +74,16 @@ test-suite lineageos-history-test
   other-modules:
       DiffSpec
       ParserSpec
+      SortSpec
       Paths_lineageos_history
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       QuickCheck
-    , aeson
-    , attoparsec
     , base >=4.7 && <5
-    , blaze-html
     , bytestring
-    , directory
-    , hashable
     , hspec
     , lineageos-history
-    , process
-    , text
-    , time
     , unordered-containers
   default-language: GHC2021

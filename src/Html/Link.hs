@@ -51,9 +51,9 @@ wiki (Types.Model m) =
     (H.toHtml m)
 
 hudson :: Git.Commit -> H.Html
-hudson (hash, time) =
+hudson (Git.Commit hash time) =
   ( H.a
       H.! HA.href
-        (H.textValue (T.concat ["https://github.com/LineageOS/hudson/commit/", T.pack hash, "/"]))
+        (H.textValue (T.concat ["https://github.com/LineageOS/hudson/commit/", hash, "/"]))
   )
     (H.toHtml (Time.formatTime Time.defaultTimeLocale "%F %R" time))

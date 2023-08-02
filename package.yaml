@@ -21,16 +21,6 @@ description:         Please see the README on GitHub at <https://github.com/mejg
 
 dependencies:
 - base >= 4.7 && < 5
-- aeson
-- attoparsec
-- text
-- bytestring
-- process
-- directory
-- time
-- unordered-containers
-- hashable
-- blaze-html
 
 ghc-options:
 - -Wall
@@ -45,6 +35,17 @@ ghc-options:
 
 library:
   language: GHC2021
+  dependencies:
+  - aeson
+  - attoparsec
+  - text
+  - bytestring
+  - process
+  - directory
+  - time
+  - unordered-containers
+  - hashable
+  - blaze-html
   source-dirs: src
 
 executables:
@@ -71,4 +72,6 @@ tests:
     dependencies:
     - lineageos-history
     - hspec
+    - bytestring
+    - unordered-containers
     - QuickCheck
