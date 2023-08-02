@@ -11,18 +11,18 @@ import Text.Blaze.Html5 qualified as H
 import Text.Blaze.Html5.Attributes qualified as HA
 import Types qualified
 
-toHtml :: Types.DeviceMap -> Diff.Action -> H.Html
-toHtml devices (Diff.Added mdl brnch) = do
+toHtml :: Types.DeviceMap -> Diff.Info -> H.Html
+toHtml devices (mdl, Diff.Added brnch) = do
   H.td $ do
     brnchsAdded brnch
   nameToHtml devices mdl
   modelToHtml mdl
-toHtml devices (Diff.Removed mdl brnch) = do
+toHtml devices (mdl, Diff.Removed brnch) = do
   H.td $ do
     brnchsRemoved brnch
   nameToHtml devices mdl
   modelToHtml mdl
-toHtml devices (Diff.Switched mdl brnch1 brnch2) = do
+toHtml devices (mdl, Diff.Switched brnch1 brnch2) = do
   H.td $ do
     brnchsSwitched brnch1
     " → "

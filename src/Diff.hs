@@ -1,15 +1,17 @@
-module Diff (get, Action (..)) where
+module Diff (get, Action (..), Info) where
 
 import Data.HashMap.Strict qualified as HM
 import Types qualified
 
+type Info = (Types.Model, Action)
+
 data Action
-  = Added Types.Model [Types.Branch]
-  | Switched Types.Model [Types.Branch] [Types.Branch]
-  | Removed Types.Model [Types.Branch]
+  = Added [Types.Branch]
+  | Switched [Types.Branch] [Types.Branch]
+  | Removed [Types.Branch]
   deriving (Eq, Show)
 
-get :: Types.TargetMap -> Types.TargetMap -> [Action]
+get :: Types.TargetMap -> Types.TargetMap -> [Info]
 get prev new = added ++ switched ++ removed
   where
     p = removeSameBranches prev new
@@ -26,17 +28,16 @@ removeSameBranches (Types.TargetMap m1) (Types.TargetMap m2) =
       Nothing -> v
       Just v2 -> filter (`notElem` v2) v
 
-getAdded :: Types.TargetMap -> Types.TargetMap -> [Action]
+getAdded :: Types.TargetMap -> Types.TargetMap -> [Info]
 getAdded (Types.TargetMap prev) (Types.TargetMap new) =
-  map (uncurry Added) . HM.toList $ HM.difference new prev
+  map (\(k, v) -> (k, Added v)) . HM.toList $ HM.difference new prev
 
-getRemoved :: Types.TargetMap -> Types.TargetMap -> [Action]
+getRemoved :: Types.TargetMap -> Types.TargetMap -> [Info]
 getRemoved (Types.TargetMap prev) (Types.TargetMap new) =
-  map (uncurry Removed) . HM.toList $ HM.difference prev new
+  map (\(k, v) -> (k, Removed v)) . HM.toList $ HM.difference prev new
 
-getSwitched :: Types.TargetMap -> Types.TargetMap -> [Action]
+getSwitched :: Types.TargetMap -> Types.TargetMap -> [Info]
 getSwitched (Types.TargetMap prev) (Types.TargetMap new) =
-  map (\(mdl, (fromBrnchs, toBrnchs)) -> Switched mdl fromBrnchs toBrnchs)
-    -- . filter (\(_, (x, y)) -> x /= y)
+  map (\(mdl, (fromBrnchs, toBrnchs)) -> (mdl, Switched fromBrnchs toBrnchs))
     . HM.toList
     $ HM.intersectionWith (,) prev new

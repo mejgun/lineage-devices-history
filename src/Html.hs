@@ -20,7 +20,7 @@ import Types qualified
 path :: FilePath
 path = "html"
 
-type Diffs = (Git.Commit, [Diff.Action])
+type Diffs = (Git.Commit, [Diff.Info])
 
 saveDiffs :: Types.DeviceMap -> [Diffs] -> IO ()
 saveDiffs dm@(Types.DeviceMap devices) xs = do
@@ -76,9 +76,9 @@ filterDiffByDevice xs d = foldr f [] xs
       [] -> acc
       fx -> (c, fx) : acc
 
-    f2 (Diff.Added mdl _) = mdl `elem` d
-    f2 (Diff.Removed mdl _) = mdl `elem` d
-    f2 (Diff.Switched mdl _ _) = mdl `elem` d
+    f2 (mdl, Diff.Added _) = mdl `elem` d
+    f2 (mdl, Diff.Removed _) = mdl `elem` d
+    f2 (mdl, Diff.Switched _ _) = mdl `elem` d
 
 diffToHtml :: Types.DeviceMap -> Diffs -> H.Html
 diffToHtml devices (commit, xs) =

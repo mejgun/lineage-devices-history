@@ -40,7 +40,7 @@ handleCommit (devs, commits) c@(cmt, _) = do
   ts <- Los.BuildFile.read
   pure (newdevs, HM.insert c ts commits)
 
-type Acc2 = ([(Git.Commit, [Diff.Action])], Types.TargetMap)
+type Acc2 = ([(Git.Commit, [Diff.Info])], Types.TargetMap)
 
 getDelta :: Acc2 -> (Git.Commit, Types.TargetMap) -> Acc2
 getDelta _acc@(deltas, oldcommit) _commit@(c, m) =
