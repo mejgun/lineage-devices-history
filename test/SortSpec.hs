@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module SortSpec where
+module SortSpec (main) where
 
 import Data.HashMap.Strict qualified as HM
 import Diff qualified

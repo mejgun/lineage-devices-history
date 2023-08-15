@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module ParserSpec where
+module ParserSpec (main) where
 
 import Control.Exception (evaluate)
 import Data.ByteString qualified as BS
