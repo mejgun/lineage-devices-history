@@ -33,10 +33,10 @@ openRepo path =
   D.setCurrentDirectory path
     >> P.readProcess "git" ["stash"] ""
     >> P.readProcessWithExitCode "git" ["stash", "drop"] ""
-    >> checkout "master"
+    >> checkout "main"
 
 leaveRepo :: IO ()
-leaveRepo = checkout "master" >> D.setCurrentDirectory ".."
+leaveRepo = checkout "main" >> D.setCurrentDirectory ".."
 
 checkout :: T.Text -> IO ()
 checkout commit = void $ P.readProcess "git" ["checkout", "--quiet", T.unpack commit] ""
