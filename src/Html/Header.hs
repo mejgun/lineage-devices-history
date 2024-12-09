@@ -7,7 +7,7 @@ import Text.Blaze.Html5 qualified as H
 import Text.Blaze.Html5.Attributes qualified as HA
 
 css :: H.AttributeValue
-css = "https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
+css = "https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css"
 
 put :: T.Text -> H.Html -> H.Html
 put hdr x = H.html $ do
