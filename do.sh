@@ -1,4 +1,5 @@
 set -ex
+git pull
 stack test --coverage
 stack clean && stack build --pedantic --copy-bins --local-bin-path .
 #git clone https://github.com/LineageOS/hudson
